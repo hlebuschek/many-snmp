@@ -1,0 +1,29 @@
+<div class="modal fade" id="snmpResultModal" tabindex="-1" aria-labelledby="snmpResultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="snmpResultModalLabel">Результаты SNMP-опроса</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="snmpForm">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>OID</th>
+                                <th>Тип</th>
+                                <th>Значение</th>
+                                <th>Выбрать</th>
+                            </tr>
+                        </thead>
+                        <tbody id="snmpTableBody">
+                            <!-- OID data will be populated dynamically -->
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-primary">Сохранить выбор</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
