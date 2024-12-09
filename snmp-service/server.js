@@ -37,11 +37,12 @@ app.post("/snmp", async (req, res) => {
 
   try {
     const result = await handleSnmpRequest(ip, community);
-    res.send(result);
+    res.json(result); // Автоматическое преобразование в JSON
   } catch (error) {
     res.status(500).send({ error: error.toString() });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`SNMP server is running on http://localhost:${port}`);

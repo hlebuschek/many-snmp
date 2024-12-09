@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from .models import Printer, SNMPOID
 
+
 class SNMPOIDSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для модели SNMPOID
+    Сериализатор для модели SNMPOID.
+    Включает категории, активность и полное описание OID.
     """
     class Meta:
         model = SNMPOID
-        fields = '__all__'  # Включает все поля модели
+        fields = '__all__'  # Включает все поля модели SNMPOID
 
 
 class PrinterSerializer(serializers.ModelSerializer):
@@ -19,4 +21,4 @@ class PrinterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Printer
-        fields = '__all__'  # Включает все поля модели Printer + snmp_oids
+        fields = '__all__'  # Включает все поля модели Printer и связанные OID

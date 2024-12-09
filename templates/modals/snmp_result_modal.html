@@ -6,22 +6,30 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div id="loadingIndicator" style="display: none; text-align: center;">
+                    <p>Загрузка данных SNMP...</p>
+                </div>
+                <div id="errorIndicator" style="display: none; text-align: center; color: red;">
+                    <p>Ошибка загрузки данных SNMP. Пожалуйста, попробуйте снова.</p>
+                </div>
                 <form id="snmpForm">
-                    <table class="table">
+                    <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
                                 <th>Название</th>
                                 <th>OID</th>
-                                <th>Тип</th>
                                 <th>Значение</th>
-                                <th>Выбрать</th>
+                                <th>Категория</th>
                             </tr>
                         </thead>
                         <tbody id="snmpTableBody">
                             <!-- OID data will be populated dynamically -->
                         </tbody>
                     </table>
-                    <button type="submit" class="btn btn-primary">Сохранить выбор</button>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">Сохранить выбор</button>
+                    </div>
                 </form>
             </div>
         </div>

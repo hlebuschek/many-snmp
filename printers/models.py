@@ -17,6 +17,12 @@ class Printer(models.Model):
 
 class SNMPOID(models.Model):
     CATEGORY_CHOICES = [
+        ('mac_address', 'MAC-адрес'),
+        ('serial_number', 'Серийный номер'),
+        ('a4_bw', 'A4 Ч/Б'),
+        ('a3_bw', 'A3 Ч/Б'),
+        ('a4_color', 'A4 Цветная'),
+        ('a3_color', 'A3 Цветная'),
         ('id', 'Идентификационные данные'),
         ('metric', 'Метрика'),
     ]
@@ -24,11 +30,18 @@ class SNMPOID(models.Model):
     printer = models.ForeignKey(Printer, on_delete=models.CASCADE, related_name='snmp_oids')
     name = models.CharField(max_length=255)  # Название (например, "Серийный номер")
     oid = models.CharField(max_length=255)  # OID для SNMP
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    active = models.BooleanField(default=False)  # Параметр отслеживается
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        blank=True,
+        null=True,
+    )  # Категория, выбранная пользователем
+    active = models.BooleanField(default=False)  # Используется ли этот OID
+    user_defined = models.BooleanField(default=False)  # Является ли настройка пользовательской
 
     def __str__(self):
-        return f"{self.name} ({self.oid})"
+        return f"{self.printer} - {self.name} ({self.oid}) [{self.category}]"
+
 
 
 class SNMPHistory(models.Model):
@@ -39,3 +52,6 @@ class SNMPHistory(models.Model):
 
     def __str__(self):
         return f"{self.printer} - {self.oid.name} ({self.timestamp})"
+
+
+
