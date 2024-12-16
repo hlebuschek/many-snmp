@@ -32,84 +32,180 @@ $(document).ready(function () {
                 });
             },
             error: function (xhr) {
-                console.error("Ошибка загрузки данных принтеров:", xhr.responseText);
                 toastr.error('Ошибка загрузки данных принтеров');
+                console.error("Ошибка загрузки данных принтеров:", xhr.responseText);
             }
         });
     }
 
-    // Обработчик для кнопки "Редактировать"
-    $(document).on('click', '.edit-btn', function () {
+    // SNMP Poll: запрос данных SNMP для выбранного принтера
+    $(document).on('click', '.snmp-btn', function () {
         const printerId = $(this).data('id');
-        console.log(`Редактируем принтер с ID: ${printerId}`);
+        console.log(`Выполняем SNMP-опрос для принтера с ID: ${printerId}`);
+        $('#snmpResultModal').data('printer-id', printerId);
+        const button = $(this);
+        button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Опрос...');
+
+        $('#snmpTableBody').empty();
 
         $.ajax({
-            url: `/printers/${printerId}/edit/`,
+            url: `/snmp/poll/${printerId}/`,
             method: 'GET',
-            success: function (data) {
-                console.log("Получены данные принтера для редактирования:", data);
+            success: function (response) {
+                console.log("Ответ SNMP:", response);
+                button.prop('disabled', false).html('SNMP Опрос');
 
-                // Заполняем данные в форму модального окна
-                $('#addPrinterModal input[name="id"]').val(data.id);
-                $('#addPrinterModal input[name="organization"]').val(data.organization);
-                $('#addPrinterModal input[name="branch"]').val(data.branch);
-                $('#addPrinterModal input[name="city"]').val(data.city);
-                $('#addPrinterModal input[name="address"]').val(data.address);
-                $('#addPrinterModal input[name="model"]').val(data.model);
-                $('#addPrinterModal input[name="serial_number"]').val(data.serial_number);
-                $('#addPrinterModal input[name="inventory_number"]').val(data.inventory_number);
-                $('#addPrinterModal input[name="ip_address"]').val(data.ip_address);
+                const parsedResponse = Object.entries(response[0]);
+                parsedResponse.forEach(([oid, value]) => {
+                    const displayValue = typeof value === 'object' ? JSON.stringify(value) : value;
+                    $('#snmpTableBody').append(`
+                        <tr>
+                            <td>${oid}</td>
+                            <td>${displayValue}</td>
+                            <td>
+                                <select class="form-select" data-oid-id="${oid}">
+                                    <option value="">Не записывать</option>
+                                    <option value="mac_address">MAC-адрес</option>
+                                    <option value="serial_number">Серийный номер</option>
+                                    <option value="a4_bw">A4 Ч/Б</option>
+                                    <option value="a3_bw">A3 Ч/Б</option>
+                                    <option value="a4_color">A4 Цветная</option>
+                                    <option value="a3_color">A3 Цветная</option>
+                                </select>
+                            </td>
+                        </tr>
+                    `);
+                });
 
-                // Показываем модальное окно редактирования
-                $('#addPrinterModal').modal('show');
+                $('#snmpResultModal').modal('show');
             },
             error: function (xhr) {
-                console.error("Ошибка получения данных принтера для редактирования:", xhr.responseText);
-                toastr.error('Ошибка загрузки данных для редактирования');
+                button.prop('disabled', false).html('SNMP Опрос');
+                toastr.error('Ошибка выполнения SNMP-опроса');
+                console.error("Ошибка выполнения SNMP-опроса:", xhr.responseText);
             }
         });
     });
 
-    // Сохранение изменений принтера
-    $('#editPrinterForm').submit(function (e) {
+    // Сохранение выбора OID после SNMP-опроса
+    $('#snmpForm').submit(function (e) {
         e.preventDefault();
-
-        const printerId = $('#addPrinterModal input[name="id"]').val();
-        console.log(`Сохраняем изменения для принтера с ID: ${printerId}`);
-
-        const formData = {
-            organization: $('#addPrinterModal input[name="organization"]').val(),
-            branch: $('#addPrinterModal input[name="branch"]').val(),
-            city: $('#addPrinterModal input[name="city"]').val(),
-            address: $('#addPrinterModal input[name="address"]').val(),
-            model: $('#addPrinterModal input[name="model"]').val(),
-            serial_number: $('#addPrinterModal input[name="serial_number"]').val(),
-            inventory_number: $('#addPrinterModal input[name="inventory_number"]').val(),
-            ip_address: $('#addPrinterModal input[name="ip_address"]').val(),
-        };
-
-        console.log("Данные для отправки:", formData);
+        const printerId = $('#snmpResultModal').data('printer-id');
+        const selectedOids = [];
+        $('#snmpTableBody tr').each(function () {
+            const oidId = $(this).find('select').data('oid-id');
+            const category = $(this).find('select').val();
+            if (category) selectedOids.push({ oid: oidId, category });
+        });
 
         $.ajax({
-            url: `/printers/${printerId}/update/`,
+            url: `/snmp/save_snmp_oid_mapping/${printerId}/`,
             method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken },
+            contentType: 'application/json',
+            data: JSON.stringify({ oids: selectedOids }),
+            success: function () {
+                toastr.success('OID шаблон сохранён');
+                $('#snmpResultModal').modal('hide');
+            },
+            error: function (xhr) {
+                toastr.error('Ошибка сохранения OID шаблона');
+                console.error("Ошибка сохранения OID шаблона:", xhr.responseText);
+            }
+        });
+    });
+
+    // Редактирование принтера
+    $(document).on('click', '.edit-btn', function () {
+        const printerId = $(this).data('id');
+        console.log(`Открытие формы редактирования для принтера с ID: ${printerId}`);
+        $.ajax({
+            url: `/api/printers/${printerId}/`,
+            method: 'GET',
+            success: function (printer) {
+                $('#printerId').val(printer.id);
+                $('#organization').val(printer.organization);
+                $('#branch').val(printer.branch);
+                $('#city').val(printer.city);
+                $('#address').val(printer.address);
+                $('#model').val(printer.model);
+                $('#serial_number').val(printer.serial_number);
+                $('#inventory_number').val(printer.inventory_number);
+                $('#ip_address').val(printer.ip_address);
+
+                $('#addPrinterModalLabel').text('Редактировать принтер');
+                $('#addPrinterModal').modal('show');
+            },
+            error: function () {
+                toastr.error('Ошибка загрузки данных принтера');
+            }
+        });
+    });
+
+    // Очистка формы перед добавлением нового принтера
+    $(document).on('click', '.add-btn', function () {
+        console.log("Очистка формы и открытие модального окна для нового принтера");
+        $('#printerForm')[0].reset(); // Сбрасываем значения формы
+        $('#printerId').val(''); // Очищаем ID для нового принтера
+        $('#addPrinterModalLabel').text('Добавить новый принтер');
+        $('#addPrinterModal').modal('show');
+    });
+
+    // Сохранение нового или обновлённого принтера
+    $('#printerForm').submit(function (e) {
+        e.preventDefault();
+        const id = $('#printerId').val();
+        const url = id ? `/api/printers/${id}/` : '/api/printers/';
+        const method = id ? 'PUT' : 'POST';
+        const formData = {
+            organization: $('#organization').val(),
+            branch: $('#branch').val(),
+            city: $('#city').val(),
+            address: $('#address').val(),
+            model: $('#model').val(),
+            serial_number: $('#serial_number').val(),
+            inventory_number: $('#inventory_number').val(),
+            ip_address: $('#ip_address').val()
+        };
+
+        $.ajax({
+            url,
+            method,
             headers: { 'X-CSRFToken': csrftoken },
             contentType: 'application/json',
             data: JSON.stringify(formData),
             success: function () {
-                toastr.success('Данные принтера обновлены');
-                console.log("Данные принтера успешно обновлены.");
+                toastr.success(id ? 'Принтер обновлён' : 'Принтер добавлен');
                 $('#addPrinterModal').modal('hide');
-                fetchPrinters(); // Обновляем список принтеров
+                fetchPrinters();
             },
-            error: function (xhr) {
-                console.error("Ошибка сохранения изменений принтера:", xhr.responseText);
-                toastr.error('Ошибка сохранения изменений');
+            error: function () {
+                toastr.error('Ошибка сохранения принтера');
             }
         });
     });
 
-    // Первоначальная загрузка списка принтеров
-    console.log("Загрузка списка принтеров...");
+    // Удаление принтера
+    $(document).on('click', '.delete-btn', function () {
+        const printerId = $(this).data('id');
+        console.log(`Удаляем принтер с ID: ${printerId}`);
+        if (confirm('Вы уверены, что хотите удалить этот принтер?')) {
+            $.ajax({
+                url: `/api/printers/${printerId}/`,
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': csrftoken },
+                success: function () {
+                    toastr.success('Принтер успешно удалён');
+                    fetchPrinters(); // Обновляем список принтеров
+                },
+                error: function (xhr) {
+                    toastr.error('Ошибка удаления принтера');
+                    console.error("Ошибка удаления принтера:", xhr.responseText);
+                }
+            });
+        }
+    });
+
+    // Первоначальная загрузка
     fetchPrinters();
 });
