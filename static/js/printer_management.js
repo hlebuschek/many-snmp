@@ -1,7 +1,7 @@
 $(document).ready(function () {
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Функция для загрузки списка принтеров
+    // Функция для загрузки списка принтеров fff
     function fetchPrinters() {
         console.log("Начало загрузки списка принтеров...");
         $.ajax({
