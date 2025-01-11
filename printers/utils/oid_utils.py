@@ -29,6 +29,8 @@ def load_oid_mapping(file_path):
     return oid_to_model
 
 
+# utils/oid_utils.py
+
 def extract_mac_addresses(snmp_data):
     """
     Извлекает MAC-адреса из данных SNMP.
@@ -37,10 +39,20 @@ def extract_mac_addresses(snmp_data):
     logger.info("Начало извлечения MAC-адресов из данных SNMP.")
 
     for oid, value in snmp_data.items():
-        if oid.startswith("1.3.6.1.2.1.2.2.1.6"):  # OID для MAC-адреса
-            if isinstance(value, str) and len(value) == 12:  # Проверяем, что это MAC-адрес
-                mac_addresses.append(value)
-                logger.debug(f"Найден MAC-адрес: {value} (OID: {oid})")
+        # Проверяем, что OID содержит MAC-адрес (например, "mib-2.3.1.1.2.14.1")
+        if "mib-2.3.1.1.2.14.1" in oid:
+            if isinstance(value, str) and value.startswith("0x"):  # Проверяем, что значение в шестнадцатеричном формате
+                try:
+                    # Убираем "0x" и преобразуем в стандартный формат MAC-адреса
+                    hex_value = value[2:]  # Убираем "0x"
+                    if len(hex_value) == 12:  # Проверяем, что длина корректна
+                        mac = ":".join([hex_value[i:i+2] for i in range(0, 12, 2)])  # Преобразуем в формат "xx:xx:xx:xx:xx:xx"
+                        mac_addresses.append(mac)
+                        logger.debug(f"Найден MAC-адрес: {mac} (OID: {oid})")
+                    else:
+                        logger.warning(f"Некорректная длина MAC-адреса: {value} (OID: {oid})")
+                except Exception as e:
+                    logger.error(f"Ошибка при обработке MAC-адреса {value}: {e}")
             else:
                 logger.warning(f"Некорректное значение MAC-адреса: {value} (OID: {oid})")
         else:
