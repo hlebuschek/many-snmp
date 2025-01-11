@@ -5,11 +5,12 @@ class Printer(models.Model):
     branch = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
-    model = models.CharField(max_length=255)
+    model = models.CharField(max_length=255, blank=True, null=True)  # Модель принтера
     serial_number = models.CharField(max_length=255, unique=True)
     inventory_number = models.CharField(max_length=255, unique=True)
     ip_address = models.GenericIPAddressField(protocol='IPv4')
     community = models.CharField(max_length=255, default='public')
+    mac_addresses = models.TextField(blank=True, null=True)  # MAC-адреса
 
     def __str__(self):
         return f"{self.organization} - {self.model} ({self.serial_number})"
