@@ -29,8 +29,6 @@ def load_oid_mapping(file_path):
     return oid_to_model
 
 
-# utils/oid_utils.py
-
 def extract_mac_addresses(snmp_data):
     """
     Извлекает MAC-адреса из данных SNMP.
