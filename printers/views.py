@@ -6,6 +6,8 @@ from rest_framework import viewsets
 import requests
 from .models import Printer, SNMPOID, SNMPHistory
 from .serializers import PrinterSerializer
+from .utils.oid_utils import load_oid_mapping, extract_mac_addresses, determine_printer_model
+
 
 logger = logging.getLogger(__name__)
 
@@ -31,42 +33,53 @@ def printers_list(request):
 # SNMP опрос через Node.js сервис
 def snmp_poll(request, printer_id):
     """
-    Выполняет SNMP запрос для принтера через Node.js сервис.
+    Выполняет SNMP-опрос для принтера и обрабатывает данные.
     """
     printer = get_object_or_404(Printer, pk=printer_id)
     node_service_url = "http://localhost:3000/snmp"
 
     data = [{"ip": printer.ip_address}]
-    logger.info(f"Initiating SNMP poll for printer ID {printer_id}, IP: {printer.ip_address}")
+    logger.info(f"Инициирование SNMP-опроса для принтера ID {printer_id}, IP: {printer.ip_address}")
 
     try:
         response = requests.post(node_service_url, json=data, timeout=120)
         response.raise_for_status()
 
         response_data = response.json()
-        logger.info(f"SNMP poll successful. Data received: {response_data}")
+        logger.info(f"SNMP-опрос успешен. Получены данные: {response_data}")
 
         if not isinstance(response_data, list):
-            logger.error(f"Unexpected response format: {response_data}")
+            logger.error(f"Неожиданный формат ответа: {response_data}")
             return JsonResponse({"error": "Unexpected response format"}, status=500)
 
-        existing_oids = SNMPOID.objects.filter(printer=printer).values("oid", "name", "active", "category")
+        # Загружаем справочник OID
+        oid_to_model = load_oid_mapping("./printers/utils/sysobject.ids")
+
+        # Обрабатываем данные
         for result in response_data:
-            result_oid = result.get('oid')
-            match = next((oid for oid in existing_oids if oid['oid'] == result_oid), None)
-            if match:
-                result['active'] = match['active']
-                result['name'] = match['name']
-                result['category'] = match['category']
-            else:
-                result['active'] = False
-                result['category'] = "metric"
+            logger.info(f"Обработка данных для принтера {printer_id}")
+
+            # Извлекаем MAC-адреса
+            mac_addresses = extract_mac_addresses(result)
+            logger.info(f"Извлечено MAC-адресов: {mac_addresses}")
+            printer.mac_addresses = ", ".join(mac_addresses)  # Сохраняем MAC-адреса в модель
+
+            # Определяем модель принтера
+            printer.model = determine_printer_model(result, oid_to_model)
+            logger.info(f"Определена модель принтера: {printer.model}")
+
+            # Сохраняем изменения
+            printer.save()
+            logger.info(f"Данные принтера {printer_id} успешно обновлены.")
 
         return JsonResponse(response_data, safe=False)
 
     except requests.exceptions.RequestException as req_err:
-        logger.error(f"Error during SNMP poll for printer ID {printer_id}: {req_err}")
+        logger.error(f"Ошибка при выполнении SNMP-опроса для принтера ID {printer_id}: {req_err}")
         return JsonResponse({"error": "Error during SNMP request"}, status=500)
+    except Exception as e:
+        logger.error(f"Неожиданная ошибка при обработке данных для принтера {printer_id}: {e}")
+        return JsonResponse({"error": "Unexpected error"}, status=500)
 
 
 def get_snmp_oids(request, printer_id):
