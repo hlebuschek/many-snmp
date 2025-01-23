@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # API ViewSet
 class PrinterViewSet(viewsets.ModelViewSet):
     """
-    API для управления принтерами.
+    API для управления принтерами
     """
     queryset = Printer.objects.all()
     serializer_class = PrinterSerializer
