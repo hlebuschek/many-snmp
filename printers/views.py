@@ -191,7 +191,7 @@ def edit_printer(request, printer_id):
             'city': printer.city,
             'address': printer.address,
             'model': printer.model,
-            'serial_number': printer.serial_number,
+            'serial_number':printer.serial_number,
             'inventory_number': printer.inventory_number,
             'ip_address': printer.ip_address,
         })
