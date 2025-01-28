@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'many-snmp.urls'
+ROOT_URLCONF = 'many_snmp.urls'
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'many-snmp.wsgi.application'
+WSGI_APPLICATION = 'many_snmp.wsgi.application'
 
 
 # Database
@@ -175,9 +175,7 @@ LOGGING = {
 }
 
 try:
-    from laboratory.local_settings import *  # noqa: F403,F401
-except ImportError:
+    from many_snmp.local_settings import *  # noqa: F403,F401
+except ImportError as e:
     pass
-
-
 
