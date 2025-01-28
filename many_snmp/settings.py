@@ -175,7 +175,7 @@ LOGGING = {
 }
 
 try:
-    from many_snmp.local_settings import *  # noqa: F403,F401
+    from many_snmp.local_settings import *
 except ImportError as e:
     pass
 
