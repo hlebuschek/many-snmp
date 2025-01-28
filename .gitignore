@@ -137,4 +137,5 @@ GitHub.sublime-settings
 !.vscode/launch.json
 !.vscode/extensions.json
 .history
-/many-snmp/local_settings.py
+/many
+/many_snmp/local_settings.py
