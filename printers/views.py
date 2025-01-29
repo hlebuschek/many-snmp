@@ -205,7 +205,7 @@ def update_printer(request, printer_id):
     printer = get_object_or_404(Printer, pk=printer_id)
     if request.method == 'POST':
         try:
-            data = json.loads(request.body)
+            data= json.loads(request.body)
             for field, value in data.items():
                 setattr(printer, field, value)
             printer.save()
