@@ -1,0 +1,45 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: Ubuntu-22.04
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: actions/poetry@v2
+        with:
+          poetry-version: '1.4.0'
+
+      - name: Install dependencies
+        run: |
+          poetry install --with dev
+
+      - name: Start snmpsim
+        run: |
+          poetry run snmpsimd.py --agent-udpv4-endpoint=127.0.0.1:161 &
+          echo $! > snmpsim.pid
+
+      - name: Run tests
+        run: |
+          poetry run python -m pytest tests/
+
+      - name: Stop snmpsim
+        run: |
+          kill $(cat snmpsim.pid)
+          rm snmpsim.pid
