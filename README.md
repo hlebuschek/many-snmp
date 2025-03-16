@@ -1,3 +1,5 @@
+[![Tests](https://github.com/hlebuschek/many-snmp/actions/workflows/tests.yml/badge.svg)](https://github.com/hlebuschek/many-snmp/actions/workflows/tests.yml)
+[![Linters](https://github.com/hlebuschek/many-snmp/actions/workflows/lint.yml/badge.svg)](https://github.com/hlebuschek/many-snmp/actions/workflows/lint.yml)
 # Установка проекта
 * Установить и настроить СУБД
 * Установить зависимости backend
