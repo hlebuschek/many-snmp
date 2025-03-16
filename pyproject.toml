@@ -17,3 +17,8 @@ psycopg2-binary = "^2.9.10"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[dev-dependencies]
+snmpsim = "^0.4.6"
+flake8 = "^7.0.0"
+black = "^24.3.0"
