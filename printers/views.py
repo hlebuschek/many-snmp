@@ -16,7 +16,7 @@ class PrinterViewSet(viewsets.ModelViewSet):
     """
     API для управления принтерами.
     """
-    queryset = Printer.objects.all()
+    queryset=Printer.objects.all()
     serializer_class = PrinterSerializer
 
 
