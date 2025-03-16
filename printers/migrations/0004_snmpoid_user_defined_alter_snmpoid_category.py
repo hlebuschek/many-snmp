@@ -6,18 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('printers', '0003_printer_community'),
+        ("printers", "0003_printer_community"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='snmpoid',
-            name='user_defined',
+            model_name="snmpoid",
+            name="user_defined",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='snmpoid',
-            name='category',
-            field=models.CharField(blank=True, choices=[('mac_address', 'MAC-адрес'), ('serial_number', 'Серийный номер'), ('a4_bw', 'A4 Ч/Б'), ('a3_bw', 'A3 Ч/Б'), ('a4_color', 'A4 Цветная'), ('a3_color', 'A3 Цветная'), ('id', 'Идентификационные данные'), ('metric', 'Метрика')], max_length=50, null=True),
+            model_name="snmpoid",
+            name="category",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("mac_address", "MAC-адрес"),
+                    ("serial_number", "Серийный номер"),
+                    ("a4_bw", "A4 Ч/Б"),
+                    ("a3_bw", "A3 Ч/Б"),
+                    ("a4_color", "A4 Цветная"),
+                    ("a3_color", "A3 Цветная"),
+                    ("id", "Идентификационные данные"),
+                    ("metric", "Метрика"),
+                ],
+                max_length=50,
+                null=True,
+            ),
         ),
     ]

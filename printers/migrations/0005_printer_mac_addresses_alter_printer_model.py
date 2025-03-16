@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('printers', '0004_snmpoid_user_defined_alter_snmpoid_category'),
+        ("printers", "0004_snmpoid_user_defined_alter_snmpoid_category"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='printer',
-            name='mac_addresses',
+            model_name="printer",
+            name="mac_addresses",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='printer',
-            name='model',
+            model_name="printer",
+            name="model",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

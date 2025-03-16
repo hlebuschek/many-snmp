@@ -7,22 +7,29 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Printer',
+            name="Printer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('organization', models.CharField(max_length=255)),
-                ('branch', models.CharField(max_length=255)),
-                ('city', models.CharField(max_length=255)),
-                ('address', models.CharField(max_length=255)),
-                ('model', models.CharField(max_length=255)),
-                ('serial_number', models.CharField(max_length=255, unique=True)),
-                ('inventory_number', models.CharField(max_length=255, unique=True)),
-                ('ip_address', models.GenericIPAddressField(protocol='IPv4')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("organization", models.CharField(max_length=255)),
+                ("branch", models.CharField(max_length=255)),
+                ("city", models.CharField(max_length=255)),
+                ("address", models.CharField(max_length=255)),
+                ("model", models.CharField(max_length=255)),
+                ("serial_number", models.CharField(max_length=255, unique=True)),
+                ("inventory_number", models.CharField(max_length=255, unique=True)),
+                ("ip_address", models.GenericIPAddressField(protocol="IPv4")),
             ],
         ),
     ]

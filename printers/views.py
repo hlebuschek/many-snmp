@@ -6,16 +6,22 @@ from rest_framework import viewsets
 import requests
 from .models import Printer, SNMPOID, SNMPHistory
 from .serializers import PrinterSerializer
-from .utils.oid_utils import load_oid_mapping, extract_mac_addresses, determine_printer_model
+from .utils.oid_utils import (
+    load_oid_mapping,
+    extract_mac_addresses,
+    determine_printer_model,
+)
 
 
 logger = logging.getLogger(__name__)
 
-# API ViewSet 
+
+# API ViewSet
 class PrinterViewSet(viewsets.ModelViewSet):
     """
     API для управления принтерами.
     """
+
     queryset = Printer.objects.all()
     serializer_class = PrinterSerializer
 
@@ -27,7 +33,7 @@ def printers_list(request):
     """
     printers = Printer.objects.all()
     logger.info(f"Render printers list. Count: {printers.count()}")
-    return render(request, 'printers/list.html', {'printers': printers})
+    return render(request, "printers/list.html", {"printers": printers})
 
 
 # SNMP опрос через Node.js сервис
@@ -39,7 +45,9 @@ def snmp_poll(request, printer_id):
     node_service_url = "http://localhost:3000/snmp"
 
     data = [{"ip": printer.ip_address}]
-    logger.info(f"Инициирование SNMP-опроса для принтера ID {printer_id}, IP: {printer.ip_address}")
+    logger.info(
+        f"Инициирование SNMP-опроса для принтера ID {printer_id}, IP: {printer.ip_address}"
+    )
 
     try:
         response = requests.post(node_service_url, json=data, timeout=120)
@@ -62,7 +70,9 @@ def snmp_poll(request, printer_id):
             # Извлекаем MAC-адреса
             mac_addresses = extract_mac_addresses(result)
             logger.info(f"Извлечено MAC-адресов: {mac_addresses}")
-            printer.mac_addresses = ", ".join(mac_addresses)  # Сохраняем MAC-адреса в модель
+            printer.mac_addresses = ", ".join(
+                mac_addresses
+            )  # Сохраняем MAC-адреса в модель
 
             # Определяем модель принтера
             printer.model = determine_printer_model(result, oid_to_model)
@@ -75,10 +85,14 @@ def snmp_poll(request, printer_id):
         return JsonResponse(response_data, safe=False)
 
     except requests.exceptions.RequestException as req_err:
-        logger.error(f"Ошибка при выполнении SNMP-опроса для принтера ID {printer_id}: {req_err}")
+        logger.error(
+            f"Ошибка при выполнении SNMP-опроса для принтера ID {printer_id}: {req_err}"
+        )
         return JsonResponse({"error": "Error during SNMP request"}, status=500)
     except Exception as e:
-        logger.error(f"Неожиданная ошибка при обработке данных для принтера {printer_id}: {e}")
+        logger.error(
+            f"Неожиданная ошибка при обработке данных для принтера {printer_id}: {e}"
+        )
         return JsonResponse({"error": "Unexpected error"}, status=500)
 
 
@@ -97,13 +111,13 @@ def save_snmp_oid_mapping(request, printer_id):
     Сохраняет или обновляет настройки OID для указанного принтера.
     """
     printer = get_object_or_404(Printer, pk=printer_id)
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
-            for oid_data in data.get('oids', []):
-                oid = oid_data.get('oid')
-                category = oid_data.get('category')
-                active = oid_data.get('active', True)
+            for oid_data in data.get("oids", []):
+                oid = oid_data.get("oid")
+                category = oid_data.get("category")
+                active = oid_data.get("active", True)
 
                 if not oid or not category:
                     continue
@@ -111,14 +125,18 @@ def save_snmp_oid_mapping(request, printer_id):
                 SNMPOID.objects.update_or_create(
                     printer=printer,
                     oid=oid,
-                    defaults={'category': category, 'active': active, 'user_defined': True}
+                    defaults={
+                        "category": category,
+                        "active": active,
+                        "user_defined": True,
+                    },
                 )
 
-            return JsonResponse({'message': 'Настройки OID успешно сохранены'})
+            return JsonResponse({"message": "Настройки OID успешно сохранены"})
         except Exception as e:
             logger.error(f"Error saving OID mapping for printer {printer_id}: {e}")
-            return JsonResponse({'error': f'Ошибка сохранения: {str(e)}'}, status=400)
-    return JsonResponse({'error': 'Неверный метод'}, status=405)
+            return JsonResponse({"error": f"Ошибка сохранения: {str(e)}"}, status=400)
+    return JsonResponse({"error": "Неверный метод"}, status=405)
 
 
 def snmp_history(request, printer_id):
@@ -126,28 +144,32 @@ def snmp_history(request, printer_id):
     Возвращает историю значений SNMP для указанного принтера.
     """
     printer = get_object_or_404(Printer, pk=printer_id)
-    history = SNMPHistory.objects.filter(printer=printer).select_related('oid').order_by('-timestamp')
+    history = (
+        SNMPHistory.objects.filter(printer=printer)
+        .select_related("oid")
+        .order_by("-timestamp")
+    )
     data = [
         {
-            'oid': entry.oid.oid,
-            'name': entry.oid.name,
-            'value': entry.value,
-            'timestamp': entry.timestamp,
+            "oid": entry.oid.oid,
+            "name": entry.oid.name,
+            "value": entry.value,
+            "timestamp": entry.timestamp,
         }
         for entry in history
     ]
     logger.info(f"Retrieved SNMP history for printer {printer_id}: {data}")
-    return JsonResponse({'history': data})
+    return JsonResponse({"history": data})
 
 
 def save_printer(request):
     """
     Сохраняет новый принтер или обновляет существующий.
     """
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
-            printer_id = data.get('id')
+            printer_id = data.get("id")
             if printer_id:
                 printer = get_object_or_404(Printer, pk=printer_id)
                 for field, value in data.items():
@@ -157,11 +179,11 @@ def save_printer(request):
             else:
                 printer = Printer.objects.create(**data)
                 logger.info(f"New printer created: {printer}")
-            return JsonResponse({'message': 'Принтер успешно сохранён'})
+            return JsonResponse({"message": "Принтер успешно сохранён"})
         except Exception as e:
             logger.error(f"Error saving printer: {e}")
-            return JsonResponse({'error': 'Ошибка сохранения принтера'}, status=400)
-    return JsonResponse({'error': 'Invalid method'}, status=405)
+            return JsonResponse({"error": "Ошибка сохранения принтера"}, status=400)
+    return JsonResponse({"error": "Invalid method"}, status=405)
 
 
 def delete_snmp_oid(request, oid_id):
@@ -172,10 +194,10 @@ def delete_snmp_oid(request, oid_id):
         oid = get_object_or_404(SNMPOID, pk=oid_id)
         oid.delete()
         logger.info(f"OID {oid_id} deleted successfully.")
-        return JsonResponse({'message': 'OID успешно удалён'})
+        return JsonResponse({"message": "OID успешно удалён"})
     except Exception as e:
         logger.error(f"Error deleting OID {oid_id}: {e}")
-        return JsonResponse({'error': 'Ошибка удаления OID'}, status=400)
+        return JsonResponse({"error": "Ошибка удаления OID"}, status=400)
 
 
 def edit_printer(request, printer_id):
@@ -183,19 +205,21 @@ def edit_printer(request, printer_id):
     Возвращает данные принтера для редактирования.
     """
     printer = get_object_or_404(Printer, pk=printer_id)
-    if request.method == 'GET':
-        return JsonResponse({
-            'id': printer.id,
-            'organization': printer.organization,
-            'branch': printer.branch,
-            'city': printer.city,
-            'address': printer.address,
-            'model': printer.model,
-            'serial_number': printer.serial_number,
-            'inventory_number': printer.inventory_number,
-            'ip_address': printer.ip_address,
-        })
-    return JsonResponse({'error': 'Метод не поддерживается'}, status=405)
+    if request.method == "GET":
+        return JsonResponse(
+            {
+                "id": printer.id,
+                "organization": printer.organization,
+                "branch": printer.branch,
+                "city": printer.city,
+                "address": printer.address,
+                "model": printer.model,
+                "serial_number": printer.serial_number,
+                "inventory_number": printer.inventory_number,
+                "ip_address": printer.ip_address,
+            }
+        )
+    return JsonResponse({"error": "Метод не поддерживается"}, status=405)
 
 
 def update_printer(request, printer_id):
@@ -203,15 +227,15 @@ def update_printer(request, printer_id):
     Обновляет данные принтера.
     """
     printer = get_object_or_404(Printer, pk=printer_id)
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             data = json.loads(request.body)
             for field, value in data.items():
                 setattr(printer, field, value)
             printer.save()
             logger.info(f"Printer ID {printer_id} updated successfully")
-            return JsonResponse({'message': 'Принтер успешно обновлён'})
+            return JsonResponse({"message": "Принтер успешно обновлён"})
         except Exception as e:
             logger.error(f"Error updating printer {printer_id}: {e}")
-            return JsonResponse({'error': f'Ошибка обновления: {str(e)}'}, status=400)
-    return JsonResponse({'error': 'Неверный метод'}, status=405)
+            return JsonResponse({"error": f"Ошибка обновления: {str(e)}"}, status=400)
+    return JsonResponse({"error": "Неверный метод"}, status=405)

@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'many_snmp.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "many_snmp.settings")
 
 application = get_wsgi_application()
