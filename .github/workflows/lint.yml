@@ -1,0 +1,39 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: Ubuntu-22.04
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: actions/poetry@v2
+        with:
+          poetry-version: '1.4.0'
+
+      - name: Install dependencies
+        run: |
+          poetry install --with dev
+
+      - name: Run flake8
+        run: |
+          poetry run flake8 .
+
+      - name: Run black (check only)
+        run: |
+          poetry run black --check .
