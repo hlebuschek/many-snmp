@@ -20,8 +20,18 @@ jobs:
         pip install pylint pylint-django django djangorestframework requests
     - name: Analysing changed files with pylint
       run: |
-        # Получаем список изменённых .py файлов в текущем push
-        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.py$')
+        # Проверяем, является ли github.event.before нулевым SHA
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+          # Если это первый push, проверяем все .py файлы
+          CHANGED_FILES=$(git ls-files '*.py')
+          echo "First push detected, checking all Python files."
+        else
+          # Иначе проверяем только изменённые файлы
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.py$')
+          echo "Checking changed files in this push."
+        fi
+        
+        # Если есть файлы для проверки, запускаем pylint
         if [ -n "$CHANGED_FILES" ]; then
           pylint $CHANGED_FILES
         else
