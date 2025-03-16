@@ -11,12 +11,12 @@ from .utils.oid_utils import load_oid_mapping, extract_mac_addresses, determine_
 
 logger = logging.getLogger(__name__)
 
-# API ViewSet 
+# API ViewSet
 class PrinterViewSet(viewsets.ModelViewSet):
     """
     API для управления принтерами.
     """
-    queryset = Printer.objects.all()
+    queryset=Printer.objects.all()
     serializer_class = PrinterSerializer
 
 
