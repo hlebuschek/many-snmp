@@ -163,6 +163,6 @@ LOGGING = {
 }
 
 try:
-    from many_snmp.local_settings import *
-except ImportError as e:
+    pass
+except ImportError:
     pass

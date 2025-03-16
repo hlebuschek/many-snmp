@@ -1,17 +1,15 @@
-import logging
 import json
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from rest_framework import viewsets
-import requests
-from .models import Printer, SNMPOID, SNMPHistory
-from .serializers import PrinterSerializer
-from .utils.oid_utils import (
-    load_oid_mapping,
-    extract_mac_addresses,
-    determine_printer_model,
-)
+import logging
 
+import requests
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+from rest_framework import viewsets
+
+from .models import SNMPOID, Printer, SNMPHistory
+from .serializers import PrinterSerializer
+from .utils.oid_utils import (determine_printer_model, extract_mac_addresses,
+                              load_oid_mapping)
 
 logger = logging.getLogger(__name__)
 

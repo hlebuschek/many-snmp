@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Printer, SNMPOID
+
+from .models import SNMPOID, Printer
 
 
 class SNMPOIDSerializer(serializers.ModelSerializer):

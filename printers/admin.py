@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Printer, SNMPOID, SNMPHistory
+
+from .models import SNMPOID, Printer, SNMPHistory
 
 
 @admin.register(Printer)

@@ -1,16 +1,10 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import (
-    PrinterViewSet,
-    printers_list,
-    snmp_poll,
-    save_snmp_oid_mapping,
-    snmp_history,
-    get_snmp_oids,
-    save_printer,
-    delete_snmp_oid,
-    edit_printer,  # Новый маршрут для редактирования принтера
-)
+
+from .views import edit_printer  # Новый маршрут для редактирования принтера
+from .views import (PrinterViewSet, delete_snmp_oid, get_snmp_oids,
+                    printers_list, save_printer, save_snmp_oid_mapping,
+                    snmp_history, snmp_poll)
 
 # Создаём роутер для REST API
 router = DefaultRouter()
