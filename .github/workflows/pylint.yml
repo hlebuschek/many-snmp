@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.12"]
+        python-version: ["3.11"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -20,8 +20,18 @@ jobs:
         pip install pylint pylint-django django djangorestframework requests
     - name: Analysing changed files with pylint
       run: |
-        # Получаем список изменённых .py файлов в текущем push
-        CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.py$')
+        # Если это первый push, используем git ls-files для новых файлов
+        if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+          # Берем только файлы, добавленные в текущем push
+          CHANGED_FILES=$(git diff --name-only --diff-filter=A ${{ github.sha }} | grep '\.py$')
+          echo "First push detected, checking only added files."
+        else
+          # Иначе проверяем изменённые файлы между before и sha
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '\.py$')
+          echo "Checking changed files in this push."
+        fi
+        
+        # Если есть файлы для проверки, запускаем pylint
         if [ -n "$CHANGED_FILES" ]; then
           pylint $CHANGED_FILES
         else
